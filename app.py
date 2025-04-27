@@ -16,7 +16,7 @@ st.title("🇸🇦 Saudi Tourism Review Analyzer")
 # Load data
 @st.cache_data
 def load_data():
-    return pd.read_csv("review_data.csv")
+    return pd.read_csv("notebooks/review_data.csv")
 
 review = load_data()
 
