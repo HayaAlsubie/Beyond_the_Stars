@@ -37,9 +37,68 @@ filtered = city_filtered[city_filtered["Place Name"].isin(places)] if places els
 # ───────────────────────────────────────────────
 # SECTION 1: Filtered Review Data
 # ───────────────────────────────────────────────
-st.header("📊 Filtered Reviews")
-st.subheader(f"Showing {len(filtered)} Reviews")
-st.dataframe(filtered[["Region", "City", "Place Name", "Place Category", "Rating", "Sentiment Label"]])
+
+st.markdown("""
+    <h2 style='text-align: center; margin-top: 20px;'>📊 Filtered Reviews and Sentiment Distribution</h2>
+""", unsafe_allow_html=True)
+
+# Create two columns: left for the table, right for the pie chart
+col1, col2 = st.columns([2, 1])  # Wider column for the table
+
+with col1:
+    # Group by Place Name and calculate the average rating
+    place_avg_rating = filtered.groupby(
+        ['Region', 'City', 'Place Type', 'Place Name', 'Place Category']
+    )['Rating'].mean().reset_index()
+
+    # Round the average rating to 2 decimal places
+    place_avg_rating['Rating'] = place_avg_rating['Rating'].round(2)
+
+    # Display the dataframe
+    st.dataframe(
+        place_avg_rating[['Region', 'City', 'Place Type', 'Place Name', 'Place Category', 'Rating']],
+        use_container_width=True,
+        hide_index=True
+    )
+
+with col2:
+    if not filtered.empty:
+        # Prepare data for sentiment pie chart
+        sentiment_counts = filtered["Sentiment Label"].value_counts()
+        labels = sentiment_counts.index
+        sizes = sentiment_counts.values
+        colors = ['#66b3ff', '#ffcc99', '#ff9999']
+
+        # Create pie chart with smaller size and font for balance
+        fig, ax = plt.subplots(figsize=(2.5, 2.5), dpi=100)
+        wedges, texts, autotexts = ax.pie(
+            sizes,
+            labels=labels,
+            colors=colors,
+            autopct='%1.1f%%',
+            startangle=140,
+            textprops={'fontsize': 7}
+        )
+
+        # Match label colors and adjust font
+        for i, text in enumerate(texts):
+            text.set_color(colors[i])
+            text.set_fontsize(8)
+            text.set_fontweight("bold")
+
+        for atext in autotexts:
+            atext.set_fontsize(7)
+
+        ax.axis('equal')  # Keep the pie chart circular
+        ax.set_title("Sentiment Distribution", fontsize=10)
+
+        # Display the pie chart
+        st.pyplot(fig)
+    else:
+        st.info("No data available for selected filters.")
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 # ───────────────────────────────────────────────
 # SECTION 2: Sentiment Distribution
@@ -107,25 +166,51 @@ with col2:
     st.subheader("⚠️ Bottom 10 Rated Places")
     st.dataframe(worst_places)
 
-# Attention-needed
-neg_sentiment_counts = filtered[filtered['Sentiment Label'] == 'negative'].groupby(
-    ['Region', 'Place Name', 'City']).size().reset_index(name='Negative Reviews')
-avg_ratings = filtered.groupby(['Region', 'Place Name', 'City'])['Rating'].mean().reset_index()
-attention_df = pd.merge(neg_sentiment_counts, avg_ratings, on=['Region', 'Place Name', 'City'])
-attention_needed = attention_df.sort_values(by='Negative Reviews', ascending=False).head(10)
+# ───────────────────────────────────────────────
+# SECTION 4: Cities That Might Need Ministry Attention (Smart Analysis + Cleaned)
+# ───────────────────────────────────────────────
 
-st.subheader("🔍 Places That Might Need Ministry Attention")
-st.dataframe(attention_needed)
+# Centered title
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown("""
+        <h2 style='text-align: center;'>🏙️ Cities That Might Need Ministry Attention</h2>
+    """, unsafe_allow_html=True)
 
-# Mismatches
-filtered['Mismatch'] = filtered.apply(
-    lambda row: 'Yes' if (row['compound'] < 0 and row['Rating'] >= 4.0) else 'No', axis=1)
-mismatched_reviews = filtered[filtered['Mismatch'] == 'Yes'][[
-    'Region', 'Place Name', 'City', 'Rating', 'compound', 'Review Text'
-]].head(10)
+# Step 1: Calculate total reviews per city
+total_reviews = filtered.groupby(['Region', 'City']).size().reset_index(name='Total Reviews')
 
-st.subheader("🚨 Suspected Rating-Sentiment Mismatches")
-st.dataframe(mismatched_reviews)
+# Step 2: Calculate negative reviews per city
+neg_reviews = filtered[filtered['Sentiment Label'] == 'negative'].groupby(['Region', 'City']).size().reset_index(name='Negative Reviews')
+
+# Step 3: Calculate average rating per city
+avg_rating = filtered.groupby(['Region', 'City'])['Rating'].mean().reset_index()
+
+# Step 4: Merge all together
+city_summary = total_reviews.merge(neg_reviews, on=['Region', 'City'], how='left').merge(avg_rating, on=['Region', 'City'])
+city_summary['Negative Reviews'] = city_summary['Negative Reviews'].fillna(0)  # Fill cities with no negatives
+city_summary['Negative Rate (%)'] = (city_summary['Negative Reviews'] / city_summary['Total Reviews']) * 100
+
+# Step 5: Filter cities that really need attention
+attention_needed = city_summary[
+    (city_summary['Negative Rate (%)'] >= 30) &
+    (city_summary['Rating'] < 4.0)
+].sort_values(by='Negative Rate (%)', ascending=False)
+
+# Step 6: Round percentages and ratings
+attention_needed['Negative Rate (%)'] = attention_needed['Negative Rate (%)'].round(1)
+attention_needed['Rating'] = attention_needed['Rating'].round(2)
+
+# Step 7: Reorder columns for better view
+attention_needed = attention_needed[['Region', 'City', 'Total Reviews', 'Negative Reviews', 'Negative Rate (%)', 'Rating']]
+
+# Display nicely centered
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.dataframe(attention_needed, use_container_width=True, hide_index=True)
+
+# Add space after the section
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ───────────────────────────────────────────────
 # SECTION 4: Sentiment Tester
