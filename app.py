@@ -70,9 +70,17 @@ st.markdown("""
 col1, col2 = st.columns([2, 1])  # Wider column for the table
 
 with col1:
-    # Display filtered review data
+    # Group by Place Name and calculate the average rating
+    place_avg_rating = filtered.groupby(
+        ['Region', 'City', 'Place Type', 'Place Name', 'Place Category']
+    )['Rating'].mean().reset_index()
+
+    # Round the average rating to 2 decimal places
+    place_avg_rating['Rating'] = place_avg_rating['Rating'].round(2)
+
+    # Display the dataframe
     st.dataframe(
-        filtered[['Region', 'City', 'Place Type', 'Place Name', "Place Category", "Rating", "Sentiment Label"]],
+        place_avg_rating[['Region', 'City', 'Place Type', 'Place Name', 'Place Category', 'Rating']],
         use_container_width=True,
         hide_index=True
     )
@@ -194,25 +202,55 @@ with col2:
     st.subheader("⚠️ Bottom 10 Rated Places")
     st.dataframe(worst_places, use_container_width=True, hide_index=True)
 
-# Attention-needed
-neg_sentiment_counts = filtered[filtered['Sentiment Label'] == 'negative'].groupby(
-    ['Region', 'City', 'Place Type', 'Place Name']).size().reset_index(name='Negative Reviews')
-avg_ratings = filtered.groupby(['Region', 'City', 'Place Type', 'Place Name'])['Rating'].mean().reset_index()
-attention_df = pd.merge(neg_sentiment_counts, avg_ratings, on=['Region', 'City', 'Place Type', 'Place Name'])
-attention_needed = attention_df.sort_values(by='Negative Reviews', ascending=False).head(10)
 
-st.markdown("## 🏙️ Cities That Might Need Ministry Attention")
-st.dataframe(attention_needed, hide_index=True)
 
-# Mismatches
-filtered['Mismatch'] = filtered.apply(
-    lambda row: 'Yes' if (row['compound'] < 0 and row['Rating'] >= 4.0) else 'No', axis=1)
-mismatched_reviews = filtered[filtered['Mismatch'] == 'Yes'][[
-    'Region', 'City', 'Place Type', 'Place Name', 'Rating', 'compound', 'Review Text'
-]].head(10)
 
-st.subheader("🚨 Suspected Rating-Sentiment Mismatches")
-st.dataframe(mismatched_reviews, hide_index=True)
+
+# ───────────────────────────────────────────────
+# SECTION 4: Cities That Might Need Ministry Attention (Smart Analysis + Cleaned)
+# ───────────────────────────────────────────────
+
+# Centered title
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown("""
+        <h2 style='text-align: center;'>🏙️ Cities That Might Need Ministry Attention</h2>
+    """, unsafe_allow_html=True)
+
+# Step 1: Calculate total reviews per city
+total_reviews = filtered.groupby(['Region', 'City']).size().reset_index(name='Total Reviews')
+
+# Step 2: Calculate negative reviews per city
+neg_reviews = filtered[filtered['Sentiment Label'] == 'negative'].groupby(['Region', 'City']).size().reset_index(name='Negative Reviews')
+
+# Step 3: Calculate average rating per city
+avg_rating = filtered.groupby(['Region', 'City'])['Rating'].mean().reset_index()
+
+# Step 4: Merge all together
+city_summary = total_reviews.merge(neg_reviews, on=['Region', 'City'], how='left').merge(avg_rating, on=['Region', 'City'])
+city_summary['Negative Reviews'] = city_summary['Negative Reviews'].fillna(0)  # Fill cities with no negatives
+city_summary['Negative Rate (%)'] = (city_summary['Negative Reviews'] / city_summary['Total Reviews']) * 100
+
+# Step 5: Filter cities that really need attention
+attention_needed = city_summary[
+    (city_summary['Negative Rate (%)'] >= 30) &
+    (city_summary['Rating'] < 4.0)
+].sort_values(by='Negative Rate (%)', ascending=False)
+
+# Step 6: Round percentages and ratings
+attention_needed['Negative Rate (%)'] = attention_needed['Negative Rate (%)'].round(1)
+attention_needed['Rating'] = attention_needed['Rating'].round(2)
+
+# Step 7: Reorder columns for better view
+attention_needed = attention_needed[['Region', 'City', 'Total Reviews', 'Negative Reviews', 'Negative Rate (%)', 'Rating']]
+
+# Display nicely centered
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.dataframe(attention_needed, use_container_width=True, hide_index=True)
+
+# Add space after the section
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ───────────────────────────────────────────────
 # Compare Average Rating by Place Type
