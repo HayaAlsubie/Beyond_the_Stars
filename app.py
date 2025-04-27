@@ -11,55 +11,31 @@ from bidi.algorithm import get_display
 nltk.download('vader_lexicon', quiet=True)
 
 st.set_page_config(page_title="Tourism Review Dashboard", layout="wide")
-
-# Centered main title
-st.markdown("""
-    <h1 style='text-align: center;'>🇸🇦 Saudi Tourism Review Analyzer</h1>
-""", unsafe_allow_html=True)
-
+st.title("🇸🇦 Saudi Tourism Review Analyzer")
 
 # Load data
 @st.cache_data
 def load_data():
-    return pd.read_csv("notebooks/review_data.csv")
+    return pd.read_csv("review_data.csv")
 
 review = load_data()
 
 # ───────────────────────────────────────────────
-# GLOBAL FILTERS (Updated: Region > City > Place Type > Place Name)
+# GLOBAL FILTERS (Apply Once to All Sections)
 # ───────────────────────────────────────────────
 st.sidebar.header("🔎 Filter Options")
 
-# Filter by Region
 regions = st.sidebar.multiselect("Select Region(s)", options=review["Region"].unique())
 region_filtered = review[review["Region"].isin(regions)] if regions else review
 
-# Filter by City
 cities = st.sidebar.multiselect("Select City(s)", options=region_filtered["City"].unique())
 city_filtered = region_filtered[region_filtered["City"].isin(cities)] if cities else region_filtered
 
-# ✅ New: Filter by Place Type
-place_types = st.sidebar.multiselect("Select Place Type(s)", options=city_filtered["Place Type"].unique())
-type_filtered = city_filtered[city_filtered["Place Type"].isin(place_types)] if place_types else city_filtered
-
-filtered = type_filtered
-
-
-# ✅ Done button
-done = st.sidebar.button("Done")
-
-
-st.markdown("""
-    <div style='text-align: center; background-color: #eaf4ff; padding: 10px; border-radius: 8px; color: #333;'>
-        Explore the data by choosing filters on the left. Click <b>'Done'</b> to view insights! 🔍
-
-
-    </div>
-""", unsafe_allow_html=True)
-
+places = st.sidebar.multiselect("Select Place(s)", options=city_filtered["Place Name"].unique())
+filtered = city_filtered[city_filtered["Place Name"].isin(places)] if places else city_filtered
 
 # ───────────────────────────────────────────────
-# SECTION 1 : Filtered Reviews + Sentiment Pie Chart
+# SECTION 1: Filtered Review Data
 # ───────────────────────────────────────────────
 
 st.markdown("""
@@ -125,86 +101,70 @@ st.markdown("<br><br>", unsafe_allow_html=True)
 
 
 # ───────────────────────────────────────────────
-# SECTION 2: Compare Sentiment Between Two Regions (Fixed Width)
+# SECTION 2: Sentiment Distribution
 # ───────────────────────────────────────────────
+st.header("📈 Sentiment Distribution (Filtered Data)")
 
-# Centered container with fixed width
-st.markdown("""
-    <div style='margin: 0 auto; width: 900px;'>
-        <h2 style='text-align: center;'>📊 Compare Sentiment Distribution Between Two Regions</h2>
-""", unsafe_allow_html=True)
+def fix_arabic(text):
+    """
+    to make arabic names readable
+    """
+    try:
+        reshaped_text = arabic_reshaper.reshape(text)
+        return get_display(reshaped_text)
+    except:
+        return text
+if not filtered.empty:
+    fig, ax = plt.subplots()
+    sns.countplot(data=filtered, x="Sentiment Label", order=["positive", "neutral", "negative"], palette="magma", ax=ax)
+    ax.set_xlabel("Sentiment")
+    ax.set_ylabel("Review Count")
+    title_parts = []
 
-region_1, region_2 = st.columns(2)
+    if regions:
+        title_parts.append(f"Region(s): {', '.join(regions)}")
+    if cities:
+        title_parts.append(f"City(s): {', '.join(cities)}")
+    if places:
+        title_parts.append(f"Place(s): {', '.join(places)}")
 
-with region_1:
-    selected_region_1 = st.selectbox("📍 Select First Region", options=review["Region"].unique(), key="region_1")
-    region1_data = review[review["Region"] == selected_region_1]
+    title_lines = ["Sentiment Distribution"]
 
-with region_2:
-    selected_region_2 = st.selectbox("📍 Select Second Region", options=review["Region"].unique(), key="region_2")
-    region2_data = review[review["Region"] == selected_region_2]
-
-charts_col1, charts_col2 = st.columns(2)
-
-with charts_col1:
-    st.subheader(f"📌 Sentiment in: {selected_region_1}")
-    if not region1_data.empty:
-        fig1, ax1 = plt.subplots(figsize=(4, 3), dpi=100)
-        sns.countplot(data=region1_data, x="Sentiment Label", order=["positive", "neutral", "negative"], palette="crest", ax=ax1)
-        ax1.set_title(selected_region_1, fontsize=10)
-        ax1.set_xlabel("Sentiment")
-        ax1.set_ylabel("Review Count")
-        st.pyplot(fig1)
-    else:
-        st.info("No data available for this region.")
-
-with charts_col2:
-    st.subheader(f"📌 Sentiment in: {selected_region_2}")
-    if not region2_data.empty:
-        fig2, ax2 = plt.subplots(figsize=(4, 3), dpi=100)
-        sns.countplot(data=region2_data, x="Sentiment Label", order=["positive", "neutral", "negative"], palette="flare", ax=ax2)
-        ax2.set_title(selected_region_2, fontsize=10)
-        ax2.set_xlabel("Sentiment")
-        ax2.set_ylabel("Review Count")
-        st.pyplot(fig2)
-    else:
-        st.info("No data available for this region.")
-
-# Close fixed-width div
-st.markdown("</div>", unsafe_allow_html=True)
+    if regions:
+        title_lines.append("Region: " + ", ".join(regions))
+    if cities:
+        title_lines.append("City: " + ", ".join(cities))
+    if places:
+        fixed_places = [fix_arabic(p) for p in places]
+        title_lines.append("Place: " + ", ".join(fixed_places))
 
 
+    formatted_title = "\n".join(title_lines)
+    ax.set_title(formatted_title, fontsize=14)
+
+
+    st.pyplot(fig)
+else:
+    st.info("No data available for selected filters.")
 
 # ───────────────────────────────────────────────
 # SECTION 3: Ministry Insights
 # ───────────────────────────────────────────────
+st.markdown("---")
+st.header("🧠 Insights & Recommendations")
 
 # Top and bottom rated
-place_ratings = filtered.groupby(['Region', 'City', 'Place Type', 'Place Name'])['Rating'].mean().reset_index()
+place_ratings = filtered.groupby(['Region', 'Place Name', 'City'])['Rating'].mean().reset_index()
 top_places = place_ratings.sort_values(by='Rating', ascending=False).head(10)
 worst_places = place_ratings.sort_values(by='Rating', ascending=True).head(10)
 
-# Title centered
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.markdown("""
-        <h2 style='text-align: center;'>🧠 Insights & Recommendations</h2>
-    """, unsafe_allow_html=True)
-
-# Display full-width side-by-side tables with spacing
-col1, col2 = st.columns([1, 1], gap="medium")
-
+col1, col2 = st.columns(2)
 with col1:
     st.subheader("🌟 Top 10 Rated Places")
-    st.dataframe(top_places, use_container_width=True, hide_index=True)
-
+    st.dataframe(top_places)
 with col2:
     st.subheader("⚠️ Bottom 10 Rated Places")
-    st.dataframe(worst_places, use_container_width=True, hide_index=True)
-
-
-
-
+    st.dataframe(worst_places)
 
 # ───────────────────────────────────────────────
 # SECTION 4: Cities That Might Need Ministry Attention (Smart Analysis + Cleaned)
@@ -253,40 +213,22 @@ with col2:
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ───────────────────────────────────────────────
-# Compare Average Rating by Place Type
+# SECTION 4: Sentiment Tester
 # ───────────────────────────────────────────────
-type_ratings = filtered.groupby("Place Type")["Rating"].mean().sort_values(ascending=False).reset_index()
+with st.expander("✍️ Try Live Sentiment Analysis (Test a Review)", expanded=False):
+    user_review = st.text_area("Write a review:")
 
-st.subheader("📊 Average Rating by Place Type")
-st.dataframe(type_ratings)
+    sid = SentimentIntensityAnalyzer()
+    if user_review:
+        sentiment_scores = sid.polarity_scores(user_review)
+        compound = sentiment_scores["compound"]
 
+        if compound >= 0.05:
+            sentiment_label = "positive"
+        elif compound <= -0.05:
+            sentiment_label = "negative"
+        else:
+            sentiment_label = "neutral"
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-# Chart for average rating by Place Type
-fig, ax = plt.subplots(figsize=(10, 5))
-sns.barplot(data=type_ratings, x="Place Type", y="Rating", palette="viridis", ax=ax)
-ax.set_title("📊 Average Rating by Place Type", fontsize=14)
-ax.set_xlabel("Place Type")
-ax.set_ylabel("Average Rating")
-plt.xticks(rotation=45)
-plt.tight_layout()
-
-st.pyplot(fig)
-
-# Optional: Add sentiment breakdown per type
-type_sentiment = filtered.groupby(["Place Type", "Sentiment Label"]).size().unstack(fill_value=0)
-
-st.subheader("😊 Sentiment Distribution by Place Type")
-st.dataframe(type_sentiment)
-
-region_type_ratings = (
-    filtered.groupby(["Region", "Place Type"])["Rating"]
-    .mean()
-    .sort_values(ascending=False)
-    .reset_index()
-)
-
-st.subheader("📍 Average Rating by Region and Place Type")
-st.dataframe(region_type_ratings)
+        st.markdown(f"**Predicted Sentiment:** `{sentiment_label}`")
+        st.json(sentiment_scores)
