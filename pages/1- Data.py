@@ -155,11 +155,11 @@ def render_styled_table(df):
 # 📋 عرض الجدول
 with col1:
     place_avg_rating = filtered.groupby(
-        ['Region', 'City', 'Place Type', 'Place Name', 'Place Category']
+        ['Region', 'City', 'Place Type', 'Place Name']
     )['Rating'].mean().reset_index()
     place_avg_rating['Rating'] = place_avg_rating['Rating'].round(2)
     render_styled_table(
-        place_avg_rating[['Region', 'City', 'Place Type', 'Place Name', 'Place Category', 'Rating']]
+        place_avg_rating[['Region', 'City', 'Place Type', 'Place Name',  'Rating']]
     )
 
 # 📈 عرض الرسم الدائري بتنسيق احترافي

@@ -45,7 +45,6 @@ st.markdown("""
 <ul style='font-size: 17px; line-height: 1.8;'>
     <li>Focus improvement efforts on cities with high negative sentiment and low ratings.</li>
     <li>Standardize service quality across hospitality providers, especially in southern and northern cities.</li>
-    <li>Launch training programs for staff in hotels and restaurants to improve customer satisfaction.</li>
     <li>Promote highly-rated experiences in international tourism campaigns.</li>
 </ul>
 """, unsafe_allow_html=True)
