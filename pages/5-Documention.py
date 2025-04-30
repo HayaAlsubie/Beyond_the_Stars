@@ -1,5 +1,5 @@
 import streamlit as st
-from introduction import image_to_base64
+from Introduction import image_to_base64
 
 # ─────────────────────────────
 # PAGE CONFIG & STYLING
