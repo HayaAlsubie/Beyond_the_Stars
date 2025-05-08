@@ -59,21 +59,17 @@ section[data-testid="stSidebar"] h3 {
 """, unsafe_allow_html=True)
 
 
-# تحميل قاموس المشاعر
-nltk.download('vader_lexicon', quiet=True)
-
-# تحميل البيانات
+# تحميل البيانات الجديدة
 @st.cache_data
 def load_data():
-    return pd.read_csv("notebooks/review_data.csv")
-review = load_data()
+    return pd.read_csv("/Users/macbookpro/code/HayaAlsubie/Beyond_the_Stars/data/cleaned_reviews.csv")
+new_data = load_data()
 
 # العنوان الرئيسي + وصف الصفحة
 st.markdown("""
 <h1 style='text-align: center; font-size: 42px; color: black; font-family: "Segoe UI", sans-serif; margin-bottom: 5px;'>
     Saudi Tourism Review Analyzer
 </h1>
-
 """, unsafe_allow_html=True)
 
 # ───────────────────────────────────────────────
@@ -81,9 +77,8 @@ st.markdown("""
 # ───────────────────────────────────────────────
 st.sidebar.markdown("<h3 style='color: #BFA76F;'>🔍 Filter Options</h3>", unsafe_allow_html=True)
 
-
-regions = st.sidebar.multiselect("Select Region(s)", options=review["Region"].unique())
-region_filtered = review[review["Region"].isin(regions)] if regions else review
+regions = st.sidebar.multiselect("Select Region(s)", options=new_data["Region"].unique())
+region_filtered = new_data[new_data["Region"].isin(regions)] if regions else new_data
 
 cities = st.sidebar.multiselect("Select City(s)", options=region_filtered["City"].unique())
 city_filtered = region_filtered[region_filtered["City"].isin(cities)] if cities else region_filtered
@@ -104,7 +99,7 @@ st.markdown("""
 # SECTION 1: Filtered Reviews + Pie Chart
 # ───────────────────────────────────────────────
 st.markdown("""
-<h2 style='color: black; text-align: center; margin-top: 30px;'> Filtered Reviews and Sentiment Distribution</h2>
+<h2 style='color: black; text-align: center; margin-top: 30px;'> Filtered Reviews and Predicted Sentiment Distribution</h2>
 """, unsafe_allow_html=True)
 
 col1, col2 = st.columns([2, 1])
@@ -165,16 +160,15 @@ with col1:
 # 📈 عرض الرسم الدائري بتنسيق احترافي
 with col2:
     if not filtered.empty:
-        sentiment_counts = filtered["Sentiment Label"].value_counts()
+        sentiment_counts = filtered["Predicted Sentiment Label"].value_counts()
         total = sentiment_counts.sum()
 
         # إعداد البيانات
-        sentiment_labels = ["positive", "neutral", "negative"]
+        sentiment_labels = ["positive",  "negative"]
         sizes = [sentiment_counts.get(label, 0) for label in sentiment_labels]
         percentages = [round((value / total) * 100, 1) if total > 0 else 0 for value in sizes]
         colors = {
             "positive": "#A3C9A8",
-            "neutral": "#D9D9D9",
             "negative": "#D16666"
         }
 
@@ -185,7 +179,7 @@ with col2:
             colors=[colors[label] for label in sentiment_labels],
         )
         ax.axis('equal')
-        ax.set_title("Sentiment Distribution", fontsize=12, color="black")
+        ax.set_title("Predicted Sentiment Distribution", fontsize=12, color="black")
         ax.set_facecolor('#e6ebe0')
         fig.patch.set_facecolor('#e6ebe0')
 
@@ -198,13 +192,8 @@ with col2:
 <div style='margin-top: -20px; margin-left: 60px; font-size: 13px; line-height: 1.6; text-align: left;'>
     <b style='color: black;'>Legend</b><br>
     <span style='color:#A3C9A8;'>🟢 Positive: {:.1f}%</span><br>
-    <span style='color:#A8A8A8;'>⚪ Neutral: {:.1f}%</span><br>
     <span style='color:#D16666;'>🔴 Negative: {:.1f}%</span>
 </div>
 """.format(*percentages), unsafe_allow_html=True)
-
-
-
-
     else:
         st.info("No data available for selected filters.")

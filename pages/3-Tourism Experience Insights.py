@@ -53,7 +53,7 @@ sentiment_colors = {
 # ────────────────────────────────
 @st.cache_data
 def load_data():
-    return pd.read_csv("notebooks/review_data.csv")
+    return pd.read_csv("/Users/macbookpro/code/HayaAlsubie/Beyond_the_Stars/data/cleaned_reviews.csv")
 
 review = load_data()
 
@@ -76,46 +76,21 @@ review['Place Name'] = review['Place Name'].replace({
 # ────────────────────────────────
 st.markdown("<h1 style='text-align: center;'>Ministry Insights from Visitor Reviews</h1>", unsafe_allow_html=True)
 
-# ────────────────────────────────
-# SECTION 2: TOP & BOTTOM RATED
-# ────────────────────────────────
-place_ratings = review.groupby(['Region', 'City', 'Place Type', 'Place Name'])['Rating'].mean().reset_index()
-top_places = place_ratings.sort_values(by='Rating', ascending=False).head(10)
-worst_places = place_ratings.sort_values(by='Rating', ascending=True).head(10)
 
-st.markdown("<h2>Top 10 Rated Places</h2>", unsafe_allow_html=True)
-fig_top = px.bar(top_places, x='Place Name', y='Rating', color='Region',
-                 color_discrete_map=region_colors)
-fig_top.update_layout(xaxis_tickangle=-45, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-st.plotly_chart(fig_top, use_container_width=True)
 
-st.markdown("<h2>Bottom 10 Rated Places</h2>", unsafe_allow_html=True)
-fig_bottom = px.bar(worst_places, x='Place Name', y='Rating', color='Region',
-                    color_discrete_map=region_colors)
-fig_bottom.update_layout(xaxis_tickangle=-45, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-st.plotly_chart(fig_bottom, use_container_width=True)
 
-# ────────────────────────────────
-# SECTION 3: AVG RATING BY TYPE
-# ────────────────────────────────
-type_ratings = review.groupby("Place Type")["Rating"].mean().sort_values(ascending=False).reset_index()
-
-st.markdown("<h2>Average Rating by Place Type</h2>", unsafe_allow_html=True)
-fig1 = px.bar(type_ratings, x="Place Type", y="Rating", color="Rating", color_continuous_scale="Aggrnyl")
-fig1.update_layout(xaxis_tickangle=-45, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-st.plotly_chart(fig1, use_container_width=True)
 
 # ────────────────────────────────
 # SECTION 4: SENTIMENT DISTRIBUTION
 # ────────────────────────────────
-type_sentiment = review.groupby(["Place Type", "Sentiment Label"]).size().reset_index(name="Count")
+type_sentiment = review.groupby(["Place Type", "Predicted Sentiment Label"]).size().reset_index(name="Count")
 
 st.markdown("<h2>Sentiment Distribution by Place Type</h2>", unsafe_allow_html=True)
 fig2 = px.bar(
     type_sentiment,
     x="Place Type",
     y="Count",
-    color="Sentiment Label",
+    color="Predicted Sentiment Label",
     barmode="stack",
     color_discrete_map=sentiment_colors
 )
@@ -145,7 +120,7 @@ The **Attention Score** helps prioritize cities that may need urgent service imp
 """)
 
 total_reviews = review.groupby(['Region', 'City']).size().reset_index(name='Total Reviews')
-neg_reviews = review[review['Sentiment Label'] == 'negative'].groupby(['Region', 'City']).size().reset_index(name='Negative Reviews')
+neg_reviews = review[review['Predicted Sentiment Label'] == 'negative'].groupby(['Region', 'City']).size().reset_index(name='Negative Reviews')
 avg_rating = review.groupby(['Region', 'City'])['Rating'].mean().reset_index()
 
 attention_df = total_reviews.merge(neg_reviews, on=['Region', 'City'], how='left').merge(avg_rating, on=['Region', 'City'])
