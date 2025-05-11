@@ -5,4 +5,5 @@ matplotlib
 plotly
 nltk
 gensim==4.3.1
+scipy
 pillow
