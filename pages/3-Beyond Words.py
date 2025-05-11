@@ -68,17 +68,24 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# العنوان الرئيسي
+# العنوان + الفلتر + الرسم في عرض موحد
+
 st.markdown("""
-    <div style='margin: 0 auto; width: 900px;'>
-        <h2 style='text-align: center; color: black;'>Most Repeated Negative Words by City</h2>
+    <div style='margin: 0 auto; width: 700px; text-align: center;'>
+        <h2 style='color: black;'>Top Words in Negative Reviews</h2>
 """, unsafe_allow_html=True)
+
+# مسافة بين العنوان والفلاتر
+st.markdown("<br>", unsafe_allow_html=True)
 
 # فلتر المدينة
 city_options = sorted(data["City"].dropna().unique())
-selected_city = st.selectbox("📍 اختر المدينة", options=city_options)
+selected_city = st.selectbox("Select a City:", options=city_options)
 
-# فلترة البيانات حسب المدينة والمراجعات السلبية الإنجليزية
+# الجملة التوضيحية بعد ما نختار المدينة
+st.markdown(f"<p style='text-align:center;'>This chart highlights the most common negative keywords used by tourists in <strong>{selected_city}</strong>. These insights help identify areas for service improvement.</p>", unsafe_allow_html=True)
+
+# فلترة البيانات حسب المدينة والمراجعات السلبية
 filtered_data = data[
     (data["Reviewer Language"] == "en") &
     (data["Predicted Sentiment Label"] == "negative") &
@@ -95,7 +102,7 @@ dictionary = corpora.Dictionary(tokens)
 corpus = [dictionary.doc2bow(text) for text in tokens]
 lda_model = LdaModel(corpus=corpus, id2word=dictionary, num_topics=5, passes=10, random_state=42)
 
-# استخراج الكلمات المفتاحية
+# استخراج الكلمات
 def extract_keywords(topics):
     words = []
     for topic in topics:
@@ -106,18 +113,18 @@ def extract_keywords(topics):
 all_keywords = extract_keywords(lda_model.print_topics())
 word_counts = Counter(all_keywords).most_common(10)
 
-# الرسم البياني بدون خلفية
+# عرض الرسم البياني في نفس الكتلة
 if word_counts:
     words, counts = zip(*word_counts)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(7, 5))
     fig.patch.set_alpha(0.0)
     ax.set_facecolor('none')
     ax.barh(words, counts, color='#D16666')
-    ax.set_title(f"Top Words in Negative Reviews - {selected_city}", fontsize=18, weight='bold')
+    ax.set_title("")  # حذف العنوان من داخل الشكل
     ax.set_xlabel("Frequency")
     ax.invert_yaxis()
     st.pyplot(fig)
 else:
-    st.info("لا توجد كلمات كافية للعرض.")
+    st.info("No negative reviews available for this city in English.")
 
 st.markdown("</div>", unsafe_allow_html=True)

@@ -6,14 +6,28 @@ from introduction import image_to_base64
 # ─────────────────────────────
 st.set_page_config(page_title="Summary ", layout="wide")
 
+
 # Custom CSS styling (matches other pages)
 st.markdown("""
 <style>
+
+html, body, .stApp {
+    padding-top: 0px !important;
+    margin-top: -70px !important;
+}
+main[data-testid="stAppViewContainer"] {
+    padding-top: 0rem !important;
+    margin-top: -70px !important;
+}
+
 /* Page background */
 .stApp {
     background-color: #e6ebe0;
     color: black;
 }
+
+
+
 
 /* Header bar */
 header[data-testid="stHeader"] {
@@ -37,15 +51,31 @@ section[data-testid="stSidebar"] * {
 """, unsafe_allow_html=True)
 
 
+
+
+tourism_logo = image_to_base64("pages/tourism_logo_clean.png")
+st.markdown(f"""
+<div style='text-align: right; margin-top: 25px; margin-bottom: -10px; padding-right: 20px;'>
+    <img src="data:image/png;base64,{tourism_logo}" style="height: 60px;" alt="Tourism Authority Logo">
+</div>
+""", unsafe_allow_html=True)
+
+
+
+
+
+
+
 # ─────────────────────────────
 # RECOMMENDATIONS SECTION
 # ─────────────────────────────
 st.markdown("""
-<h2 style='margin-top: 50px;'> Recommendations</h2>
+<h2 style='margin-top: 10px;'>Recommendations</h2>
 <ul style='font-size: 17px; line-height: 1.8;'>
-    <li>Focus improvement efforts on cities with high negative sentiment and low ratings.</li>
-    <li>Standardize service quality across hospitality providers, especially in southern and northern cities.</li>
-    <li>Promote highly-rated experiences in international tourism campaigns.</li>
+    <li>Launch targeted training programs for hospitality staff in cities with frequent complaints about service quality.</li>
+    <li>Promote highly-rated locations like Riyadh and Al Khobar as tourism success models and use their strengths to guide improvements elsewhere.</li>
+    <li>Provide multilingual support in tourist-facing services, as negative reviews in English often reflect unmet communication needs.</li>
+    <li>Recognize and reward high-performing venues with visibility in official tourism platforms as a motivation for others.</li>
 </ul>
 """, unsafe_allow_html=True)
 
@@ -64,8 +94,8 @@ By listening to our visitors, we can shape a world-class tourism experience that
 
 
 # 🖼️ Load logos
-sda_base64 = image_to_base64("SDA.png")
-le_base64 = image_to_base64("le.png")
+sda_base64 = image_to_base64("pages/SDA.png")
+le_base64 = image_to_base64("pages/le.png")
 
 # ✅ Inject logos at bottom right of introduction page
 st.markdown(f"""
