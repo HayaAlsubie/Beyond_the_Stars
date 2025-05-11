@@ -53,7 +53,7 @@ sentiment_colors = {
 # ────────────────────────────────
 @st.cache_data
 def load_data():
-    return pd.read_csv("/Users/macbookpro/code/HayaAlsubie/Beyond_the_Stars/data/cleaned_reviews.csv")
+    return pd.read_csv("data/cleaned_reviews.csv")
 
 review = load_data()
 
