@@ -62,7 +62,7 @@ section[data-testid="stSidebar"] h3 {
 # تحميل البيانات الجديدة
 @st.cache_data
 def load_data():
-    return pd.read_csv("/Users/macbookpro/code/HayaAlsubie/Beyond_the_Stars/data/cleaned_reviews.csv")
+    return pd.read_csv("data/cleaned_reviews.csv")
 new_data = load_data()
 
 # العنوان الرئيسي + وصف الصفحة

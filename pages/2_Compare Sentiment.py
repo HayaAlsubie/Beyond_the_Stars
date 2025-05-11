@@ -34,7 +34,9 @@ st.markdown("""
     <h1 style='text-align: center; color: #2C3E50;'>Compare Sentiment Distribution</h1>
 """, unsafe_allow_html=True)
 
-review = pd.read_csv("/Users/macbookpro/code/HayaAlsubie/Beyond_the_Stars/data/cleaned_reviews.csv")
+
+review = pd.read_csv("data/cleaned_reviews.csv")
+
 
 # REGION AND CITY FILTERS
 regions = review["Region"].dropna().unique()
