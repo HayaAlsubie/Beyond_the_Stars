@@ -53,18 +53,18 @@ video {
 st.markdown("<h1 style='text-align: center;'>Saudi Tourism Review Analysis</h1>", unsafe_allow_html=True)
 
 # 🎥 تشغيل الفيديو المحلي بدون تحكمات
-video_path = "video.mp4"
-with open(video_path, "rb") as video_file:
-    video_bytes = video_file.read()
-    encoded_video = base64.b64encode(video_bytes).decode()
+#video_path = "video.mp4"
+#with open(video_path, "rb") as video_file:
+    #video_bytes = video_file.read()
+    #encoded_video = base64.b64encode(video_bytes).decode()
 
-video_html = f"""
-<video autoplay muted loop playsinline style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
-    <source src="data:video/mp4;base64,{encoded_video}" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
-"""
-st.markdown(video_html, unsafe_allow_html=True)
+#video_html = f"""
+#<video autoplay muted loop playsinline style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+#    <source src="data:video/mp4;base64,{encoded_video}" type="video/mp4">
+#    Your browser does not support the video tag.
+#</video>
+#"""
+#st.markdown(video_html, unsafe_allow_html=True)
 
 # 📝 محتوى الصفحة (المقدمة)
 st.markdown("""
