@@ -52,14 +52,19 @@ section[data-testid="stSidebar"] * {
 
 
 
-
+# 🖼️ Load all logos
 tourism_logo = image_to_base64("pages/tourism_logo_clean.png")
-st.markdown(f"""
-<div style='text-align: right; margin-top: 25px; margin-bottom: -10px; padding-right: 20px;'>
-    <img src="data:image/png;base64,{tourism_logo}" style="height: 60px;" alt="Tourism Authority Logo">
-</div>
-""", unsafe_allow_html=True)
+sda_base64 = image_to_base64("SDA.png")
+le_base64 = image_to_base64("le.png")
 
+# ✅ Inject all logos in one row at the top-right
+st.markdown(f"""
+    <div style='display: flex; justify-content: flex-end; align-items: center; margin-top: 25px; margin-bottom: -10px; padding-right: 20px; gap: 15px;'>
+        <img src="data:image/png;base64,{tourism_logo}" style="height: 60px;" alt="Tourism Authority Logo">
+        <img src="data:image/png;base64,{sda_base64}" style="height: 40px;" alt="SDA Logo">
+        <img src="data:image/png;base64,{le_base64}" style="height: 40px;" alt="Le Wagon Logo">
+    </div>
+""", unsafe_allow_html=True)
 
 
 
@@ -88,33 +93,4 @@ st.markdown("""
 Saudi Arabia is well on its way to becoming a top global tourist destination.<br>
 By listening to our visitors, we can shape a world-class tourism experience that reflects the Kingdom’s culture and hospitality.
 </div>
-""", unsafe_allow_html=True)
-
-
-
-
-# 🖼️ Load logos
-sda_base64 = image_to_base64("pages/SDA.png")
-le_base64 = image_to_base64("pages/le.png")
-
-# ✅ Inject logos at bottom right of introduction page
-st.markdown(f"""
-    <style>
-        .bottom-logos {{
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-top: 30px;
-            margin-right: 40px;
-        }}
-        .bottom-logos img {{
-            height: 35px;
-            margin-left: 10px;
-        }}
-    </style>
-
-    <div class="bottom-logos">
-        <img src="data:image/png;base64,{sda_base64}" alt="SDA Logo">
-        <img src="data:image/png;base64,{le_base64}" alt="LeWagon Logo">
-    </div>
 """, unsafe_allow_html=True)

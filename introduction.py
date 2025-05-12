@@ -1,5 +1,6 @@
 import streamlit as st
 import base64
+from introduction import image_to_base64
 
 
 # Helper to convert image to base64
@@ -12,6 +13,18 @@ def image_to_base64(path):
 # 🌿 تنسيقات الصفحة + الشريط الجانبي
 st.markdown("""
 <style>
+
+html, body, .stApp {
+    padding-top: 0px !important;
+    margin-top: -70px !important;
+}
+main[data-testid="stAppViewContainer"] {
+    padding-top: 0rem !important;
+    margin-top: -70px !important;
+}
+
+
+
 /* الشريط الجانبي */
 section[data-testid="stSidebar"] {
     background-color: #153f2e !important;
@@ -48,6 +61,23 @@ video {
 }
 </style>
 """, unsafe_allow_html=True)
+
+
+# 🖼️ Load all logos
+tourism_logo = image_to_base64("pages/tourism_logo_clean.png")
+sda_base64 = image_to_base64("SDA.png")
+le_base64 = image_to_base64("le.png")
+
+# ✅ Inject all logos in one row at the top-right
+st.markdown(f"""
+    <div style='display: flex; justify-content: flex-end; align-items: center; margin-top: 25px; margin-bottom: -10px; padding-right: 20px; gap: 15px;'>
+        <img src="data:image/png;base64,{tourism_logo}" style="height: 60px;" alt="Tourism Authority Logo">
+        <img src="data:image/png;base64,{sda_base64}" style="height: 40px;" alt="SDA Logo">
+        <img src="data:image/png;base64,{le_base64}" style="height: 40px;" alt="Le Wagon Logo">
+    </div>
+""", unsafe_allow_html=True)
+
+
 
 # 🏷️ عنوان الصفحة
 st.markdown("<h1 style='text-align: center;'>Saudi Tourism Review Analysis</h1>", unsafe_allow_html=True)
@@ -138,29 +168,3 @@ st.sidebar.markdown(
 def image_to_base64(path):
     with open(path, "rb") as image:
         return base64.b64encode(image.read()).decode()
-
-# 🖼️ Load logos
-sda_base64 = image_to_base64("SDA.png")
-le_base64 = image_to_base64("le.png")
-
-# ✅ Inject logos at bottom right of introduction page
-st.markdown(f"""
-    <style>
-        .bottom-logos {{
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-top: 30px;
-            margin-right: 40px;
-        }}
-        .bottom-logos img {{
-            height: 35px;
-            margin-left: 10px;
-        }}
-    </style>
-
-    <div class="bottom-logos">
-        <img src="data:image/png;base64,{sda_base64}" alt="SDA Logo">
-        <img src="data:image/png;base64,{le_base64}" alt="LeWagon Logo">
-    </div>
-""", unsafe_allow_html=True)

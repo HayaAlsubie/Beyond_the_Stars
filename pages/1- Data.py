@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import nltk
+from introduction import image_to_base64
 
 # إعداد الصفحة
 st.set_page_config(page_title="Tourism Review Dashboard", layout="wide")
@@ -20,6 +21,8 @@ st.markdown("""
 header[data-testid="stHeader"] {
     background-color: #e6ebe0 !important;
 }
+
+
 /* الشريط الجانبي */
 section[data-testid="stSidebar"] {
     background-color: #153f2e !important;
@@ -64,6 +67,7 @@ section[data-testid="stSidebar"] h3 {
 def load_data():
     return pd.read_csv("data/cleaned_reviews.csv")
 new_data = load_data()
+
 
 # العنوان الرئيسي + وصف الصفحة
 st.markdown("""
