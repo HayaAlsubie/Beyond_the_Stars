@@ -8,6 +8,9 @@ import nltk
 import re
 from collections import Counter
 
+# إعداد صفحة Streamlit
+st.set_page_config(page_title="Beyond Words", layout="wide")
+
 # تحميل stopwords
 try:
     stopwords.words('english')
@@ -39,8 +42,7 @@ def clean_tokens(text):
     tokens = str(text).lower().split()
     return [word for word in tokens if word not in english_stopwords and word not in custom_exclude and word.isalpha()]
 
-# إعداد صفحة Streamlit
-st.set_page_config(page_title="Beyond Words", layout="wide")
+
 
 # تنسيق الصفحة مثل صفحة Compare
 st.markdown("""
