@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from gensim import corpora
-from gensim.models.ldamodel import LdaModel
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
 from nltk.corpus import stopwords
 import nltk
 import re
@@ -96,25 +96,27 @@ filtered_data = data[
 # استخراج التوكينات
 filtered_data["tokens"] = filtered_data["cleaned_review"].apply(clean_tokens)
 
-# بناء نموذج LDA
-tokens = filtered_data["tokens"]
-dictionary = corpora.Dictionary(tokens)
-corpus = [dictionary.doc2bow(text) for text in tokens]
-lda_model = LdaModel(corpus=corpus, id2word=dictionary, num_topics=5, passes=10, random_state=42)
+
+# بناء نموذج LDA باستخدام sklearn
+documents = filtered_data["tokens"].apply(lambda x: ' '.join(x)).tolist()
+
+vectorizer = CountVectorizer(max_df=0.95, min_df=2, stop_words='english')
+doc_term_matrix = vectorizer.fit_transform(documents)
+
+lda_model = LatentDirichletAllocation(n_components=5, random_state=42)
+lda_model.fit(doc_term_matrix)
 
 # استخراج الكلمات
-def extract_keywords(topics):
-    words = []
-    for topic in topics:
-        _, content = topic
-        words += re.findall(r'"(.*?)"', content)
-    return words
+words = vectorizer.get_feature_names_out()
+all_keywords = []
+for topic in lda_model.components_:
+    top_words = [words[i] for i in topic.argsort()[-10:]]
+    all_keywords.extend(top_words)
 
-all_keywords = extract_keywords(lda_model.print_topics())
-word_counts = Counter(all_keywords).most_common(10)
 
 # عرض الرسم البياني في نفس الكتلة
-if word_counts:
+if all_keywords:
+    word_counts = Counter(all_keywords).most_common(10)
     words, counts = zip(*word_counts)
     fig, ax = plt.subplots(figsize=(7, 5))
     fig.patch.set_alpha(0.0)
