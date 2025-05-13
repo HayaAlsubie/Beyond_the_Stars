@@ -1,6 +1,5 @@
 import streamlit as st
 import base64
-from introduction import image_to_base64
 
 
 # Helper to convert image to base64
