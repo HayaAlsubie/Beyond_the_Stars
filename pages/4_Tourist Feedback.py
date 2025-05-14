@@ -135,7 +135,7 @@ fig_priority = px.bar(
 fig_priority.update_layout(
     plot_bgcolor='rgba(0,0,0,0)',
     paper_bgcolor='rgba(0,0,0,0)',
-    showlegend=False  # ← هذا هو السطر اللي يحذف legend
+    showlegend=False  
 )
 
 st.plotly_chart(fig_priority, use_container_width=True)

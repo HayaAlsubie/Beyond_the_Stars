@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
-import nltk
-from introduction import image_to_base64
+
 
 # إعداد الصفحة
 st.set_page_config(page_title="Tourism Review Dashboard", layout="wide")

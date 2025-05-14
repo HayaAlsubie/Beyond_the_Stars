@@ -5,7 +5,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 from nltk.corpus import stopwords
 import nltk
-import re
 from collections import Counter
 
 # إعداد صفحة Streamlit
@@ -124,7 +123,7 @@ if all_keywords:
     fig.patch.set_alpha(0.0)
     ax.set_facecolor('none')
     ax.barh(words, counts, color='#D16666')
-    ax.set_title("")  # حذف العنوان من داخل الشكل
+    ax.set_title("") 
     ax.set_xlabel("Frequency")
     ax.invert_yaxis()
     st.pyplot(fig)
