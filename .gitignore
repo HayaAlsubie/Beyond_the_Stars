@@ -1,3 +1,25 @@
+# Environment and local configuration
+.env
+.env.*
+!.env.example
+.envrc
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Project data generated locally
 raw_data/
-*.env
+
+# Editors and operating systems
 .DS_Store
+.vscode/
+.idea/
